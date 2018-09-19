@@ -17,26 +17,31 @@ import (
 import (
 	"bytes"
 	"strings"
+
+	"cvshub.com/other/import"
+
 	"foobar"
 	"foobar/baz"
+
 	"cvshub.com/foobar/import"
-	"cvshub.com/other/import"
 )
 
 func foobar() {}
 
 import (
-	// Comment going away
-	"cvshub.com/foobar/import"
-	"strings"
-	_ "foobar/baz" // in line comment
-	"foobar"
 	z "bytes"
+	"strings"
+
+	"foobar"
+	_ "foobar/baz" // in line comment
 	. "foobar/qux" // in line comment
+
+	"cvshub.com/foobar/import"
 )
 import (
-	"cvshub.com/foobar/import"
 	"bytes"
+
+	"cvshub.com/foobar/import"
 )
 import (
 	"cvshub.com/foobar/import"

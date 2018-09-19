@@ -44,8 +44,8 @@ func sortImports(in []byte, sections []string) []byte {
 		imports[section] = append(imports[section], importLine{index, importPath})
 	}
 	stdlib := 0
-	offset := 1
-	other := len(imports) - 1
+	offset := len(sections)
+	other := 1
 
 	inLines := bytes.Split(in, []byte{'\n'})
 	for i, line := range inLines {

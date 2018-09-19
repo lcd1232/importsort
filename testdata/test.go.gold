@@ -18,12 +18,12 @@ import (
 	"bytes"
 	"strings"
 
+	"cvshub.com/other/import"
+
 	"foobar"
 	"foobar/baz"
 
 	"cvshub.com/foobar/import"
-
-	"cvshub.com/other/import"
 )
 
 func foobar() {}
