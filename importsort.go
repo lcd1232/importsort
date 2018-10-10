@@ -44,7 +44,7 @@ func sortImports(in []byte, sections []string) []byte {
 		imports[section] = append(imports[section], importLine{index, importPath})
 	}
 	stdlib := 0
-	offset := len(sections)
+	offset := 2
 	other := 1
 
 	inLines := bytes.Split(in, []byte{'\n'})
@@ -67,7 +67,7 @@ func sortImports(in []byte, sections []string) []byte {
 		found := false
 		for j, sect := range sections {
 			if strings.HasPrefix(s, sect) && (len(sect) == len(s) || s[len(sect)] == '/') {
-				addImport(j+offset, i, s)
+				addImport(offset + j, i, s)
 				found = true
 				break
 			}

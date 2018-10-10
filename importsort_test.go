@@ -7,6 +7,7 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"reflect"
 	"testing"
 )
 
@@ -36,5 +37,49 @@ func TestImportSort(t *testing.T) {
 	} else if !bytes.Equal(out, gold) {
 		t.Errorf("importsort on %s different than gold", inFile)
 		t.Log(string(out))
+	}
+}
+
+func Test_sortImports(t *testing.T) {
+	type args struct {
+		in       []byte
+		sections []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []byte
+	}{
+		{
+			name: "no changes",
+			args: args{
+				in: []byte(""),
+				sections: []string{},
+			},
+			want: []byte(""),
+		},
+		{
+			name: "regroup",
+			args: args{
+				in: []byte("\"gopkg.in/foo/bar\"\n\"encoding/json\"\n\"github.com/foo/bar\""),
+				sections: []string{"github.com", "gopkg.in"},
+			},
+			want: []byte("\"encoding/json\"\n\n\"github.com/foo/bar\"\n\n\"gopkg.in/foo/bar\"\n"),
+		},
+		{
+			name: "regroup with 3rd party",
+			args: args{
+				in: []byte("\"gopkg.in/foo/bar\"\n\"encoding/json\"\n\"github.com/foo/bar\""),
+				sections: []string{"github.com"},
+			},
+			want: []byte("\"encoding/json\"\n\n\"gopkg.in/foo/bar\"\n\n\"github.com/foo/bar\"\n"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := sortImports(tt.args.in, tt.args.sections); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("sortImports() = %v, want %v", string(got), string(tt.want))
+			}
+		})
 	}
 }
