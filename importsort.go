@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"golang.org/x/tools/go/vcs"
@@ -27,6 +28,49 @@ func isStdLibPath(path string) bool {
 	}
 	elem := path[:i]
 	return !strings.Contains(elem, ".")
+}
+
+// modulePath returns the module path from the gomod file text.
+// If it cannot find a module path, it returns an empty string.
+// It is tolerant of unrelated problems in the go.mod file.
+// Implementation taken from "ModulePath" in go's source.
+func modulePath(mod []byte) string {
+	var (
+		slashSlash = []byte("//")
+		moduleStr  = []byte("module")
+	)
+
+	for len(mod) > 0 {
+		line := mod
+		mod = nil
+		if i := bytes.IndexByte(line, '\n'); i >= 0 {
+			line, mod = line[:i], line[i+1:]
+		}
+		if i := bytes.Index(line, slashSlash); i >= 0 {
+			line = line[:i]
+		}
+		line = bytes.TrimSpace(line)
+		if !bytes.HasPrefix(line, moduleStr) {
+			continue
+		}
+		line = line[len(moduleStr):]
+		n := len(line)
+		line = bytes.TrimSpace(line)
+		if len(line) == n || len(line) == 0 {
+			continue
+		}
+
+		if line[0] == '"' || line[0] == '`' {
+			p, err := strconv.Unquote(string(line))
+			if err != nil {
+				return "" // malformed quoted string or multiline module path
+			}
+			return p
+		}
+
+		return string(line)
+	}
+	return "" // missing module path
 }
 
 // sortImports takes in an "import" body and returns it sorted
@@ -67,7 +111,7 @@ func sortImports(in []byte, sections []string) []byte {
 		found := false
 		for j, sect := range sections {
 			if strings.HasPrefix(s, sect) && (len(sect) == len(s) || s[len(sect)] == '/') {
-				addImport(offset + j, i, s)
+				addImport(offset+j, i, s)
 				found = true
 				break
 			}
@@ -196,7 +240,22 @@ func vcsRootImportPath(f string) (string, error) {
 	var root string
 	_, root, err = vcs.FromDir(dir, filepath.Join(gopath, "src"))
 	if err != nil {
-		return "", err
+		// Handling modules
+		goModPath := ""
+		for {
+			if _, errOS := os.Stat(dir + "/go.mod"); os.IsNotExist(errOS) {
+				dir = filepath.Dir(dir)
+				if dir == "/" {
+					return "", err
+				}
+			} else {
+				goModPath = dir + "/go.mod"
+				goModData, _ := ioutil.ReadFile(goModPath)
+				root = modulePath(goModData)
+				vcsRootCache[dir] = root
+				return root, nil
+			}
+		}
 	}
 	vcsRootCache[dir] = root
 	return root, nil
