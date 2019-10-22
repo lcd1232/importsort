@@ -252,6 +252,7 @@ func vcsRootImportPath(f string) (string, error) {
 				goModPath = dir + "/go.mod"
 				goModData, _ := ioutil.ReadFile(goModPath)
 				root = modulePath(goModData)
+				vcsRootCache[dir] = root
 				return root, nil
 			}
 		}
