@@ -53,7 +53,7 @@ func Test_sortImports(t *testing.T) {
 		{
 			name: "no changes",
 			args: args{
-				in: []byte(""),
+				in:       []byte(""),
 				sections: []string{},
 			},
 			want: []byte(""),
@@ -61,7 +61,7 @@ func Test_sortImports(t *testing.T) {
 		{
 			name: "regroup",
 			args: args{
-				in: []byte("\"gopkg.in/foo/bar\"\n\"encoding/json\"\n\"github.com/foo/bar\""),
+				in:       []byte("\"gopkg.in/foo/bar\"\n\"encoding/json\"\n\"github.com/foo/bar\""),
 				sections: []string{"github.com", "gopkg.in"},
 			},
 			want: []byte("\"encoding/json\"\n\n\"github.com/foo/bar\"\n\n\"gopkg.in/foo/bar\"\n"),
@@ -69,7 +69,7 @@ func Test_sortImports(t *testing.T) {
 		{
 			name: "regroup with 3rd party",
 			args: args{
-				in: []byte("\"gopkg.in/foo/bar\"\n\"encoding/json\"\n\"github.com/foo/bar\""),
+				in:       []byte("\"gopkg.in/foo/bar\"\n\"encoding/json\"\n\"github.com/foo/bar\""),
 				sections: []string{"github.com"},
 			},
 			want: []byte("\"encoding/json\"\n\n\"gopkg.in/foo/bar\"\n\n\"github.com/foo/bar\"\n"),
